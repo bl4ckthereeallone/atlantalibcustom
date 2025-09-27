@@ -1726,67 +1726,69 @@
 			-- 
 
 			-- cfg holder
-local localPlayer = Players.LocalPlayer
+				local holder = library:panel({
+					name = "Configurations", 
+					size = dim2(0, 324, 0, 410),
+					position = dim2(0, items.main_holder.AbsolutePosition.X + items.main_holder.AbsoluteSize.X + 2, 0, items.main_holder.AbsolutePosition.Y),
+					image = "rbxassetid://105199726008012",
+				}) 
 
-local holder = library:panel({
-    name = "Configurations", 
-    size = dim2(0, 324, 0, 410),
-    position = dim2(0, items.main_holder.AbsolutePosition.X + items.main_holder.AbsoluteSize.X + 2, 0, items.main_holder.AbsolutePosition.Y),
-    image = "rbxassetid://105199726008012",
-})
+				local items = holder.items
 
-local items = holder.items
+				getgenv().load_config = function(name)
+					library:load_config(readfile(library.directory .. "/configs/" .. name .. ".cfg"))
+				end 
 
--- Your existing config code here (unchanged)...
+				local column = setmetatable(items, library):column() 
+				local section = column:section({name = "Options"})
+					config_holder = section:list({flag = "config_name_list"})
+					section:textbox({flag = "config_name_text_box"})
+					section:button_holder({})
+					section:button({name = "Create", callback = function()
+						writefile(library.directory .. "/configs/" .. flags["config_name_text_box"] .. ".cfg", library:get_config())
+						library:config_list_update()
+					end})
+					section:button({name = "Delete", callback = function()
+						delfile(library.directory .. "/configs/" .. flags["config_name_list"] .. ".cfg")
+						library:config_list_update()
+					end})
+					section:button_holder({})
+					section:button({name = "Load", callback = function()
+						library:load_config(readfile(library.directory .. "/configs/" .. flags["config_name_list"] .. ".cfg"))
+						library:notification({text = "Loaded Config: " .. flags["config_name_list"], time = 3})
+					end})
+					section:button({name = "Save", callback = function()
+						writefile(library.directory .. "/configs/" .. flags["config_name_list"] .. ".cfg", library:get_config())
+						library:config_list_update()
+						library:notification({text = "Saved Config: " .. flags["config_name_list"], time = 3})
+					end})
+					section:button_holder({})
+					section:button({name = "Refresh Configs", callback = function()
+						library:config_list_update()
+					end})
+					section:button_holder({})
+					section:button({name = "Unload Config", callback = function()
+						library:load_config(library.old_config)
+					end})
+					section:button({name = "Unload Menu", callback = function()
+						library:load_config(library.old_config)
 
--- Create the ViewportFrame in your holder (or any container)
-local viewportFrame = Instance.new("ViewportFrame")
-viewportFrame.Size = UDim2.new(1, 0, 0.5, 0) -- half height of the panel
-viewportFrame.Position = UDim2.new(0, 0, 0, 0)
-viewportFrame.BackgroundTransparency = 1
-viewportFrame.BorderSizePixel = 0
-viewportFrame.Parent = holder -- Or holder.items or wherever you want it
+						for _, gui in library.guis do 
+							gui:Destroy() 
+						end 
 
--- Create a camera for the viewport
-local camera = Instance.new("Camera")
-viewportFrame.CurrentCamera = camera
+						for _, connection in library.connections do 
+							connection:Disconnect() 
+						end
 
--- Function to setup the character model in viewport
-local function setupCharacterPreview()
-    -- Clear previous children inside viewport
-    viewportFrame:ClearAllChildren()
-
-    -- Clone the character
-    local character = localPlayer.Character or localPlayer.CharacterAdded:Wait()
-    local clone = character:Clone()
-
-    -- Remove any scripts or unnecessary parts
-    for _, descendant in pairs(clone:GetDescendants()) do
-        if descendant:IsA("Script") or descendant:IsA("LocalScript") or descendant:IsA("ModuleScript") then
-            descendant:Destroy()
-        end
-    end
-
-    -- Parent the clone to viewport
-    clone.Parent = viewportFrame
-
-    -- Position the clone in the viewport
-    -- Find HumanoidRootPart or Torso for positioning
-    local rootPart = clone:FindFirstChild("HumanoidRootPart") or clone:FindFirstChild("Torso")
-    if rootPart then
-        clone:SetPrimaryPartCFrame(CFrame.new(0, 0, 0))
-        -- Setup camera
-        camera.CFrame = CFrame.new(Vector3.new(0, 2, 5), Vector3.new(0, 2, 0))
-    end
-end
-
--- Call it once to setup preview
-setupCharacterPreview()
-
--- Optionally, refresh on character respawn
-localPlayer.CharacterAdded:Connect(function()
-    setupCharacterPreview()
-end)
+						blur:Destroy()
+					end})
+			--
+				
+				local items = holder.items
+				
+				local column = setmetatable(items, library):column() 
+				window.esp_section = column:section({name = "Main"})
 			--  
 
 			-- playerlist 
